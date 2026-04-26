@@ -184,7 +184,10 @@
     }
 
     function addFiles(files) {
-      const valid = files.filter(f => ALLOWED_EXT.includes(getExt(f)));
+      const existing = new Set(queue.map(q => q.file.name));
+      const valid = files
+        .filter(f => ALLOWED_EXT.includes(getExt(f)))
+        .filter(f => !existing.has(f.name));
       if (valid.length === 0) return;
 
       valid.forEach(file => {
@@ -208,15 +211,21 @@
     }
 
     // ── Drop zone events ──────────────────────────────────────────────────────
-    dropZone.addEventListener('click', () => fileInput.click());
+    dropZone.addEventListener('click', e => {
+      if (e.target !== fileInput && e.target.tagName !== 'LABEL') {
+        fileInput.click();
+      }
+    });
 
     dropZone.addEventListener('dragover', e => {
       e.preventDefault();
       dropZone.classList.add('dragover');
     });
 
-    dropZone.addEventListener('dragleave', () => {
-      dropZone.classList.remove('dragover');
+    dropZone.addEventListener('dragleave', e => {
+      if (!dropZone.contains(e.relatedTarget)) {
+        dropZone.classList.remove('dragover');
+      }
     });
 
     dropZone.addEventListener('drop', e => {
