@@ -315,8 +315,48 @@
     }
 
     // ── ZIP + download (added in Task 7) ──────────────────────────────────────
+    async function buildAndDownload(results) {
+      const zip = new JSZip();
+      results.forEach(({ name, md }) => {
+        const mdName = name.replace(/\.(pdf|docx|pptx)$/i, '.md');
+        zip.file(mdName, md);
+      });
+      const blob = await zip.generateAsync({ type: 'blob' });
+      saveAs(blob, 'converted.zip');
+    }
 
     // ── Convert button (added in Task 7) ──────────────────────────────────────
+    const converters = { pdf: convertPDF, docx: convertDOCX, pptx: convertPPTX };
+
+    convertBtn.addEventListener('click', async () => {
+      convertBtn.disabled = true;
+      statusMsg.textContent = '';
+      const results = [];
+
+      for (const item of queue) {
+        setBadge(item.badge, 'processing');
+        try {
+          const converter = converters[getExt(item.file)];
+          const md = await converter(item.file);
+          results.push({ name: item.file.name, md });
+          setBadge(item.badge, 'done');
+        } catch (err) {
+          setBadge(item.badge, 'failed');
+          console.error(`Conversion failed: ${item.file.name}`, err);
+        }
+      }
+
+      if (results.length > 0) {
+        statusMsg.textContent = `✓ ${results.length} file(s) converted. Download starting…`;
+        await buildAndDownload(results);
+      } else {
+        statusMsg.textContent = 'All files failed to convert. Check console for errors.';
+      }
+
+      // Reset queue for next batch
+      queue = [];
+      convertBtn.disabled = true;
+    });
   </script>
 </body>
 </html>
