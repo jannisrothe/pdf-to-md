@@ -151,7 +151,90 @@
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.5/FileSaver.min.js"></script>
   <script>
-    // JS added in Tasks 3–7
+    // ── Config ────────────────────────────────────────────────────────────────
+    pdfjsLib.GlobalWorkerOptions.workerSrc =
+      'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+
+    const ALLOWED_EXT = ['pdf', 'docx', 'pptx'];
+
+    // ── State ─────────────────────────────────────────────────────────────────
+    let queue = []; // Array of { file, badge }
+
+    // ── DOM refs ──────────────────────────────────────────────────────────────
+    const dropZone   = document.getElementById('drop-zone');
+    const fileInput  = document.getElementById('file-input');
+    const fileList   = document.getElementById('file-list');
+    const convertBtn = document.getElementById('convert-btn');
+    const statusMsg  = document.getElementById('status-msg');
+
+    // ── Helpers ───────────────────────────────────────────────────────────────
+    function getExt(file) {
+      return file.name.split('.').pop().toLowerCase();
+    }
+
+    function setBadge(badge, state) {
+      const labels = {
+        waiting:    'WAITING',
+        processing: 'PROCESSING...',
+        done:       'DONE ✓',
+        failed:     'FAILED ✗',
+      };
+      badge.className = `badge ${state}`;
+      badge.textContent = labels[state];
+    }
+
+    function addFiles(files) {
+      const valid = files.filter(f => ALLOWED_EXT.includes(getExt(f)));
+      if (valid.length === 0) return;
+
+      valid.forEach(file => {
+        const li     = document.createElement('li');
+        const name   = document.createElement('span');
+        const badge  = document.createElement('span');
+
+        name.className   = 'file-name';
+        name.textContent = file.name;
+        badge.className  = 'badge waiting';
+        badge.textContent = 'WAITING';
+
+        li.appendChild(name);
+        li.appendChild(badge);
+        fileList.appendChild(li);
+        queue.push({ file, badge });
+      });
+
+      convertBtn.disabled = false;
+      statusMsg.textContent = '';
+    }
+
+    // ── Drop zone events ──────────────────────────────────────────────────────
+    dropZone.addEventListener('click', () => fileInput.click());
+
+    dropZone.addEventListener('dragover', e => {
+      e.preventDefault();
+      dropZone.classList.add('dragover');
+    });
+
+    dropZone.addEventListener('dragleave', () => {
+      dropZone.classList.remove('dragover');
+    });
+
+    dropZone.addEventListener('drop', e => {
+      e.preventDefault();
+      dropZone.classList.remove('dragover');
+      addFiles(Array.from(e.dataTransfer.files));
+    });
+
+    fileInput.addEventListener('change', () => {
+      addFiles(Array.from(fileInput.files));
+      fileInput.value = '';
+    });
+
+    // ── Converters (added in Tasks 4–6) ───────────────────────────────────────
+
+    // ── ZIP + download (added in Task 7) ──────────────────────────────────────
+
+    // ── Convert button (added in Task 7) ──────────────────────────────────────
   </script>
 </body>
 </html>
