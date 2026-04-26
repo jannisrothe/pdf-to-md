@@ -271,6 +271,13 @@
       return md;
     }
 
+    async function convertDOCX(file) {
+      const arrayBuffer = await file.arrayBuffer();
+      const result = await mammoth.convertToMarkdown({ arrayBuffer });
+      const title  = file.name.replace(/\.docx$/i, '');
+      return `# ${title}\n\n${result.value}`;
+    }
+
     // ── ZIP + download (added in Task 7) ──────────────────────────────────────
 
     // ── Convert button (added in Task 7) ──────────────────────────────────────
