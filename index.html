@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>PDF → MD</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;700&display=swap" rel="stylesheet">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/mammoth/1.6.0/mammoth.browser.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.5/FileSaver.min.js"></script>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'Space Grotesk', system-ui, sans-serif;
+      background: #FFEE00;
+      color: #000;
+      min-height: 100vh;
+      padding: 2rem;
+    }
+
+    main {
+      max-width: 720px;
+      margin: 0 auto;
+    }
+
+    h1 {
+      font-size: 3rem;
+      font-weight: 700;
+      letter-spacing: -2px;
+      margin-bottom: 2rem;
+      border-bottom: 4px solid #000;
+      padding-bottom: 1rem;
+    }
+
+    #drop-zone {
+      border: 4px solid #000;
+      box-shadow: 6px 6px 0 #000;
+      background: #fff;
+      padding: 3rem 2rem;
+      text-align: center;
+      cursor: pointer;
+      transition: transform 0.1s, box-shadow 0.1s;
+      margin-bottom: 1.5rem;
+    }
+
+    #drop-zone.dragover {
+      background: #00E5FF;
+      transform: translate(-3px, -3px);
+      box-shadow: 9px 9px 0 #000;
+    }
+
+    #drop-zone p { font-size: 1.1rem; margin-bottom: 0.5rem; }
+
+    #drop-zone label {
+      font-weight: 700;
+      text-decoration: underline;
+      cursor: pointer;
+    }
+
+    #file-list {
+      list-style: none;
+      margin-bottom: 1.5rem;
+    }
+
+    #file-list li {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border: 3px solid #000;
+      box-shadow: 4px 4px 0 #000;
+      background: #fff;
+      padding: 0.75rem 1rem;
+      margin-bottom: 0.5rem;
+    }
+
+    .file-name {
+      font-weight: 700;
+      flex: 1;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+      padding-right: 1rem;
+    }
+
+    .badge {
+      font-size: 0.75rem;
+      font-weight: 700;
+      padding: 0.25rem 0.6rem;
+      border: 2px solid #000;
+      text-transform: uppercase;
+      white-space: nowrap;
+    }
+
+    .badge.waiting    { background: #eee; }
+    .badge.processing { background: #FFEE00; }
+    .badge.done       { background: #00FF85; }
+    .badge.failed     { background: #FF3366; color: #fff; }
+
+    #convert-btn {
+      font-family: inherit;
+      font-size: 1.1rem;
+      font-weight: 700;
+      background: #000;
+      color: #FFEE00;
+      border: 4px solid #000;
+      box-shadow: 6px 6px 0 #000;
+      padding: 1rem 2rem;
+      cursor: pointer;
+      width: 100%;
+      letter-spacing: 1px;
+      transition: transform 0.1s, box-shadow 0.1s;
+    }
+
+    #convert-btn:hover:not(:disabled) {
+      transform: translate(-3px, -3px);
+      box-shadow: 9px 9px 0 #000;
+    }
+
+    #convert-btn:active:not(:disabled) {
+      transform: translate(3px, 3px);
+      box-shadow: 3px 3px 0 #000;
+    }
+
+    #convert-btn:disabled {
+      opacity: 0.4;
+      cursor: not-allowed;
+      box-shadow: 4px 4px 0 #000;
+    }
+
+    #status-msg {
+      margin-top: 1rem;
+      font-weight: 700;
+      font-size: 0.9rem;
+      min-height: 1.4rem;
+    }
+  </style>
+</head>
+<body>
+  <main>
+    <h1>PDF → MD</h1>
+    <div id="drop-zone">
+      <p>Drop PDFs, DOCX, or PPTX here</p>
+      <p>or <label for="file-input">browse files</label></p>
+      <input type="file" id="file-input" multiple accept=".pdf,.docx,.pptx" hidden>
+    </div>
+    <ul id="file-list"></ul>
+    <button id="convert-btn" disabled>CONVERT &amp; DOWNLOAD ZIP</button>
+    <p id="status-msg"></p>
+  </main>
+  <script>
+    // JS added in Tasks 3–7
+  </script>
+</body>
+</html>
