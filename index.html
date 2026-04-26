@@ -337,6 +337,11 @@
         setBadge(item.badge, 'processing');
         try {
           const converter = converters[getExt(item.file)];
+          if (!converter) {
+            console.error(`No converter registered for: ${item.file.name}`);
+            setBadge(item.badge, 'failed');
+            continue;
+          }
           const md = await converter(item.file);
           results.push({ name: item.file.name, md });
           setBadge(item.badge, 'done');
