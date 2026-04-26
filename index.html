@@ -278,6 +278,42 @@
       return `# ${title}\n\n${result.value}`;
     }
 
+    function extractSlideText(xml) {
+      // OOXML stores text in <a:t> elements; collect all of them in order
+      const matches = xml.match(/<a:t[^>]*>([^<]*)<\/a:t>/g) || [];
+      return matches
+        .map(m => m.replace(/<[^>]+>/g, '').trim())
+        .filter(Boolean)
+        .join('\n');
+    }
+
+    async function convertPPTX(file) {
+      const arrayBuffer = await file.arrayBuffer();
+      const zip = await JSZip.loadAsync(arrayBuffer);
+
+      // Collect slide XML files, sort by slide number
+      const slideNames = Object.keys(zip.files)
+        .filter(name => /^ppt\/slides\/slide\d+\.xml$/.test(name))
+        .sort((a, b) => {
+          const numA = parseInt(a.match(/slide(\d+)/)[1], 10);
+          const numB = parseInt(b.match(/slide(\d+)/)[1], 10);
+          return numA - numB;
+        });
+
+      const title = file.name.replace(/\.pptx$/i, '');
+      let md = `# ${title}\n\n`;
+
+      for (let i = 0; i < slideNames.length; i++) {
+        const xml  = await zip.files[slideNames[i]].async('string');
+        const text = extractSlideText(xml);
+        if (text.trim()) {
+          md += `## Slide ${i + 1}\n\n${text}\n\n`;
+        }
+      }
+
+      return md;
+    }
+
     // ── ZIP + download (added in Task 7) ──────────────────────────────────────
 
     // ── Convert button (added in Task 7) ──────────────────────────────────────
