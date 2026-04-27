@@ -251,23 +251,39 @@
         const page    = await pdf.getPage(i);
         const content = await page.getTextContent();
 
-        // Concatenate text items; items with a large x-gap get a newline
         let pageText = '';
         let lastX = null;
+        let lastY = null;
+
         for (const item of content.items) {
-          if (lastX !== null && Math.abs(item.transform[4] - lastX) > 100) {
-            pageText += '\n';
+          const x = item.transform[4];
+          const y = item.transform[5];
+          const lineHeight = Math.abs(item.transform[0]) || 12;
+
+          if (lastY !== null) {
+            const yDiff = lastY - y; // positive = moved down (PDF Y is bottom-up)
+            if (yDiff > lineHeight * 1.5) {
+              pageText += '\n\n';
+            } else if (yDiff > lineHeight * 0.5) {
+              pageText += '\n';
+            } else if (Math.abs(x - lastX) > 100) {
+              pageText += '\n';
+            }
           }
+
           pageText += item.str;
-          lastX = item.transform[4] + (item.width || 0);
+          lastX = x + (item.width || 0);
+          lastY = y;
         }
 
         pageText = pageText.trim();
         if (pageText) {
-          md += `## Page ${i}\n\n${pageText}\n\n`;
+          md += `${pageText}\n\n---\n\n`;
         }
       }
 
+      // Remove trailing separator
+      md = md.replace(/\n\n---\n\n$/, '\n');
       return md;
     }
 
