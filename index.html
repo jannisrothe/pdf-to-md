@@ -5,147 +5,270 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>PDF → MD</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400;12..96,600;12..96,800&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
     body {
-      font-family: 'Space Grotesk', system-ui, sans-serif;
-      background: #FFEE00;
+      font-family: 'Bricolage Grotesque', system-ui, sans-serif;
+      background-color: #FFEE00;
+      background-image: radial-gradient(circle, rgba(0,0,0,0.18) 1.5px, transparent 1.5px);
+      background-size: 28px 28px;
       color: #000;
       min-height: 100vh;
-      padding: 2rem;
+      padding: 3rem 1.5rem 5rem;
     }
 
     main {
-      max-width: 720px;
+      max-width: 680px;
       margin: 0 auto;
     }
 
-    h1 {
-      font-size: 3rem;
-      font-weight: 700;
-      letter-spacing: -2px;
-      margin-bottom: 2rem;
-      border-bottom: 4px solid #000;
-      padding-bottom: 1rem;
+    /* ── Header ─────────────────────────────────────────────────────────── */
+
+    header {
+      margin-bottom: 2.5rem;
     }
 
+    .label-tag {
+      display: inline-block;
+      font-family: 'DM Mono', monospace;
+      font-size: 0.6rem;
+      font-weight: 500;
+      letter-spacing: 3px;
+      text-transform: uppercase;
+      background: #000;
+      color: #FFEE00;
+      padding: 0.3rem 0.75rem;
+      margin-bottom: 0.75rem;
+    }
+
+    h1 {
+      font-size: clamp(3.5rem, 10vw, 5.5rem);
+      font-weight: 800;
+      letter-spacing: -4px;
+      line-height: 0.9;
+      border-bottom: 4px solid #000;
+      padding-bottom: 1rem;
+      margin-bottom: 0.75rem;
+    }
+
+    h1 .arrow {
+      font-weight: 300;
+      letter-spacing: 0;
+      opacity: 0.45;
+      margin: 0 0.15em;
+    }
+
+    .file-types-hint {
+      font-family: 'DM Mono', monospace;
+      font-size: 0.65rem;
+      letter-spacing: 2px;
+      opacity: 0.45;
+      text-transform: uppercase;
+    }
+
+    /* ── Drop zone ──────────────────────────────────────────────────────── */
+
     #drop-zone {
-      border: 4px solid #000;
-      box-shadow: 6px 6px 0 #000;
+      border: 3px solid #000;
+      box-shadow: 8px 8px 0 #000;
       background: #fff;
-      padding: 3rem 2rem;
+      padding: 2.75rem 2rem;
       text-align: center;
       cursor: pointer;
-      transition: transform 0.1s, box-shadow 0.1s;
-      margin-bottom: 1.5rem;
+      transition: transform 0.1s, box-shadow 0.1s, background 0.12s;
+      margin-bottom: 1.25rem;
+      margin-top: 2rem;
+    }
+
+    #drop-zone:hover {
+      transform: translate(-2px, -2px);
+      box-shadow: 10px 10px 0 #000;
     }
 
     #drop-zone.dragover {
       background: #00E5FF;
       transform: translate(-3px, -3px);
-      box-shadow: 9px 9px 0 #000;
+      box-shadow: 11px 11px 0 #000;
     }
 
-    #drop-zone p { font-size: 1.1rem; margin-bottom: 0.5rem; }
+    .drop-icon {
+      display: block;
+      margin: 0 auto 1.25rem;
+      color: #000;
+      opacity: 0.25;
+      transition: opacity 0.15s, transform 0.15s;
+    }
+
+    #drop-zone:hover .drop-icon {
+      opacity: 0.65;
+      transform: translateY(-3px);
+    }
+
+    #drop-zone.dragover .drop-icon {
+      opacity: 1;
+      transform: translateY(-5px);
+    }
+
+    #drop-zone p {
+      font-size: 1rem;
+      font-weight: 500;
+      color: #444;
+      line-height: 1.7;
+    }
+
+    #drop-zone.dragover p { color: #000; font-weight: 700; }
 
     #drop-zone label {
-      font-weight: 700;
+      font-weight: 800;
       text-decoration: underline;
+      text-underline-offset: 3px;
       cursor: pointer;
+      color: #000;
     }
+
+    /* ── File list ──────────────────────────────────────────────────────── */
 
     #file-list {
       list-style: none;
-      margin-bottom: 1.5rem;
+      display: flex;
+      flex-direction: column;
+      gap: 0.5rem;
+    }
+
+    #file-list:not(:empty) {
+      margin-bottom: 1.25rem;
     }
 
     #file-list li {
       display: flex;
-      justify-content: space-between;
       align-items: center;
+      gap: 0.75rem;
       border: 3px solid #000;
       box-shadow: 4px 4px 0 #000;
       background: #fff;
       padding: 0.75rem 1rem;
-      margin-bottom: 0.5rem;
     }
 
+    #file-list li[data-type="pdf"]  { border-left: 6px solid #FF3366; }
+    #file-list li[data-type="docx"] { border-left: 6px solid #2B9CF6; }
+    #file-list li[data-type="pptx"] { border-left: 6px solid #FF8800; }
+
+    .file-ext {
+      font-family: 'DM Mono', monospace;
+      font-size: 0.58rem;
+      font-weight: 500;
+      letter-spacing: 1px;
+      padding: 0.15rem 0.45rem;
+      border: 1.5px solid currentColor;
+      text-transform: uppercase;
+      white-space: nowrap;
+      flex-shrink: 0;
+    }
+
+    .file-ext.ext-pdf  { color: #FF3366; }
+    .file-ext.ext-docx { color: #2B9CF6; }
+    .file-ext.ext-pptx { color: #FF8800; }
+
     .file-name {
-      font-weight: 700;
+      font-weight: 600;
+      font-size: 0.9rem;
       flex: 1;
       overflow: hidden;
       text-overflow: ellipsis;
       white-space: nowrap;
-      padding-right: 1rem;
     }
 
     .badge {
-      font-size: 0.75rem;
-      font-weight: 700;
-      padding: 0.25rem 0.6rem;
-      border: 2px solid #000;
+      font-family: 'DM Mono', monospace;
+      font-size: 0.6rem;
+      font-weight: 500;
+      padding: 0.2rem 0.55rem;
+      border: 1.5px solid #000;
       text-transform: uppercase;
       white-space: nowrap;
+      letter-spacing: 0.5px;
+      flex-shrink: 0;
     }
 
-    .badge.waiting    { background: #eee; }
-    .badge.processing { background: #FFEE00; }
-    .badge.done       { background: #00FF85; }
-    .badge.failed     { background: #FF3366; color: #fff; }
+    .badge.waiting    { background: #f0f0f0; color: #999; border-color: #ccc; }
+    .badge.processing { background: #FFEE00; color: #000; border-color: #000; }
+    .badge.done       { background: #00FF85; color: #000; border-color: #000; }
+    .badge.failed     { background: #FF3366; color: #fff; border-color: #FF3366; }
+
+    /* ── Convert button ─────────────────────────────────────────────────── */
 
     #convert-btn {
-      font-family: inherit;
-      font-size: 1.1rem;
-      font-weight: 700;
+      font-family: 'DM Mono', monospace;
+      font-size: 0.9rem;
+      font-weight: 500;
+      letter-spacing: 2.5px;
+      text-transform: uppercase;
       background: #000;
       color: #FFEE00;
-      border: 4px solid #000;
-      box-shadow: 6px 6px 0 #000;
-      padding: 1rem 2rem;
+      border: 3px solid #000;
+      box-shadow: 8px 8px 0 #000;
+      padding: 1.1rem 2rem;
       cursor: pointer;
       width: 100%;
-      letter-spacing: 1px;
       transition: transform 0.1s, box-shadow 0.1s;
     }
 
     #convert-btn:hover:not(:disabled) {
       transform: translate(-3px, -3px);
-      box-shadow: 9px 9px 0 #000;
+      box-shadow: 11px 11px 0 #000;
     }
 
     #convert-btn:active:not(:disabled) {
       transform: translate(3px, 3px);
-      box-shadow: 3px 3px 0 #000;
+      box-shadow: 5px 5px 0 #000;
     }
 
     #convert-btn:disabled {
-      opacity: 0.4;
+      background: #444;
+      color: #888;
+      border-color: #444;
       cursor: not-allowed;
-      box-shadow: 4px 4px 0 #000;
+      box-shadow: 4px 4px 0 #222;
     }
+
+    /* ── Status ─────────────────────────────────────────────────────────── */
 
     #status-msg {
       margin-top: 1rem;
-      font-weight: 700;
-      font-size: 0.9rem;
+      font-family: 'DM Mono', monospace;
+      font-size: 0.78rem;
+      font-weight: 400;
+      letter-spacing: 0.3px;
       min-height: 1.4rem;
     }
   </style>
 </head>
 <body>
   <main>
-    <h1>PDF → MD</h1>
+    <header>
+      <span class="label-tag">Document Converter</span>
+      <h1>PDF<span class="arrow">→</span>MD</h1>
+      <p class="file-types-hint">PDF · DOCX · PPTX</p>
+    </header>
+
     <div id="drop-zone">
+      <svg class="drop-icon" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="square" stroke-linejoin="miter">
+        <polyline points="6,10 12,4 18,10"></polyline>
+        <line x1="12" y1="4" x2="12" y2="17"></line>
+        <line x1="4" y1="20" x2="20" y2="20"></line>
+      </svg>
       <p>Drop PDFs, DOCX, or PPTX here</p>
       <p>or <label for="file-input">browse files</label></p>
       <input type="file" id="file-input" multiple accept=".pdf,.docx,.pptx" hidden>
     </div>
+
     <ul id="file-list"></ul>
-    <button id="convert-btn" disabled>CONVERT &amp; DOWNLOAD ZIP</button>
+    <button id="convert-btn" disabled>Convert &amp; Download ZIP</button>
     <p id="status-msg" aria-live="polite"></p>
   </main>
+
   <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/mammoth/1.6.0/mammoth.browser.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
@@ -191,15 +314,24 @@
       if (valid.length === 0) return;
 
       valid.forEach(file => {
-        const li     = document.createElement('li');
-        const name   = document.createElement('span');
-        const badge  = document.createElement('span');
+        const li    = document.createElement('li');
+        const ext   = document.createElement('span');
+        const name  = document.createElement('span');
+        const badge = document.createElement('span');
+        const fileExt = getExt(file);
+
+        li.dataset.type = fileExt;
+
+        ext.className   = `file-ext ext-${fileExt}`;
+        ext.textContent = fileExt.toUpperCase();
 
         name.className   = 'file-name';
         name.textContent = file.name;
+
         badge.className  = 'badge waiting';
         badge.textContent = 'WAITING';
 
+        li.appendChild(ext);
         li.appendChild(name);
         li.appendChild(badge);
         fileList.appendChild(li);
@@ -239,7 +371,7 @@
       fileInput.value = '';
     });
 
-    // ── Converters (added in Tasks 4–6) ───────────────────────────────────────
+    // ── Converters ────────────────────────────────────────────────────────────
 
     async function convertPDF(file) {
       const arrayBuffer = await file.arrayBuffer();
@@ -330,7 +462,7 @@
       return md;
     }
 
-    // ── ZIP + download (added in Task 7) ──────────────────────────────────────
+    // ── ZIP + download ────────────────────────────────────────────────────────
     async function buildAndDownload(results) {
       const zip = new JSZip();
       results.forEach(({ name, md }) => {
@@ -341,7 +473,7 @@
       saveAs(blob, 'converted.zip');
     }
 
-    // ── Convert button (added in Task 7) ──────────────────────────────────────
+    // ── Convert button ────────────────────────────────────────────────────────
     const converters = { pdf: convertPDF, docx: convertDOCX, pptx: convertPPTX };
 
     convertBtn.addEventListener('click', async () => {
